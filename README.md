@@ -18,7 +18,7 @@ Travel Guide is an AI-powered image translation app for tourists.
 ## Team roles
 
 - Lissette → Backend
-- Member 2 → AI Services
-- Member 3 → Frontend
-- Member 4 → Cloud / Data
-- Member 5 → Architecture / Testing
+- Jason → AI Services
+- Wardatul → Frontend
+- Bin → Cloud / Data
+- Samer → Architecture / Testing
