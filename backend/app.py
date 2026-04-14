@@ -2,6 +2,7 @@ from chalice import Chalice, Response
 import base64
 import json
 import logging
+import boto3
 
 # =========================================================
 # TRAVEL GUIDE BACKEND
@@ -26,6 +27,9 @@ import logging
 
 app = Chalice(app_name="travel-guide")
 app.log.setLevel(logging.INFO)
+
+rekognition_client = boto3.client("rekognition", region_name="us-east-1")
+translate_client = boto3.client("translate", region_name="us-east-1")
 
 # =========================================================
 # NOTE FOR MEMBER 4 (Cloud / Data):
@@ -186,7 +190,16 @@ def extract_text():
         # Use AWS Rekognition here to detect text from image_bytes.
         # Replace ONLY the placeholder below.
         # =====================================================
-        extracted_text = "TODO: Member 2 will extract text with Rekognition here."
+        response = rekognition_client.detect_text(Image={"Bytes": image_bytes})
+
+        lines = []
+        for item in response.get("TextDetections", []):
+            if item.get("Type") == "LINE":
+                detected = item.get("DetectedText", "").strip()
+                if detected:
+                    lines.append(detected)
+
+        extracted_text = " ".join(lines).strip()
 
         return json_response(
             status_code=200,
@@ -251,7 +264,13 @@ def translate_text():
         # Use AWS Translate here.
         # Replace ONLY the placeholder below.
         # =====================================================
-        translated_text = f"TODO: Member 2 will translate this text to {target_language}."
+        response = translate_client.translate_text(
+            Text=text_value,
+            SourceLanguageCode="auto",
+            TargetLanguageCode=target_language
+        )
+
+        translated_text = response.get("TranslatedText", "")
 
         return json_response(
             status_code=200,
@@ -329,14 +348,41 @@ def process_image():
         # Step 1: Extract text from image_bytes using Rekognition.
         # Replace ONLY the placeholder below.
         # =====================================================
-        extracted_text = "TODO: Member 2 will extract text from image here."
+        response = rekognition_client.detect_text(Image={"Bytes": image_bytes})
+
+        lines = []
+        for item in response.get("TextDetections", []):
+            if item.get("Type") == "LINE":
+                detected = item.get("DetectedText", "").strip()
+                if detected:
+                    lines.append(detected)
+
+        extracted_text = " ".join(lines).strip()
+
+        if not extracted_text:
+            return json_response(
+                status_code=200,
+                success=True,
+                message="No text was detected in the image.",
+                data={
+                    "extracted_text": "",
+                    "translated_text": "",
+                    "target_language": target_language
+                }
+            )
 
         # =====================================================
         # TODO (MEMBER 2):
         # Step 2: Translate extracted_text using AWS Translate.
         # Replace ONLY the placeholder below.
         # =====================================================
-        translated_text = f"TODO: Member 2 will translate extracted text to {target_language}."
+        translation_response = translate_client.translate_text(
+            Text=extracted_text,
+            SourceLanguageCode="auto",
+            TargetLanguageCode=target_language
+        )
+
+        translated_text = translation_response.get("TranslatedText", "")
 
         return json_response(
             status_code=200,
