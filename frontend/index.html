@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel Guide - Image Translator</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+</head>
+<body class="bg-light d-flex flex-column min-vh-100">
+
+  <nav class="navbar navbar-dark bg-primary shadow-sm">
+    <div class="container d-flex flex-column align-items-center py-2">
+      <span class="navbar-brand mb-0 h3">Travel Guide</span>
+      <small class="text-light">AI-powered Image Translator for Tourists</small>
+    </div>
+  </nav>
+
+  <main class="container my-5 flex-grow-1">
+    <div class="row g-4">
+
+      <!-- Left Sidebar Profile Card -->
+      <aside class="col-lg-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-body text-center">
+            <div
+              class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3"
+              style="width: 90px; height: 90px; font-size: 2rem; font-weight: 700;"
+            >
+              G1
+            </div>
+
+            <h4 class="mb-1">Group 1</h4>
+            <p class="text-muted mb-3">Travel Guide Development Team</p>
+
+            <p class="small text-muted">
+              This project was developed as part of COMP264 Cloud Machine Learning.
+              The team collaborated on frontend, backend, AI services, cloud integration,
+              and testing.
+            </p>
+
+            <hr />
+
+            <div class="text-start">
+              <h6 class="fw-bold mb-3">Team Members</h6>
+              <div id="teamList" class="d-flex flex-column gap-3"></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right Main Content -->
+      <section class="col-lg-8">
+
+        <div class="card shadow-sm mb-4">
+          <div class="card-body">
+            <h4 class="card-title mb-3">Upload Image</h4>
+
+            <div class="mb-3">
+              <label for="imageInput" class="form-label">Choose an image</label>
+              <input class="form-control" type="file" id="imageInput" accept="image/*" />
+            </div>
+
+            <div class="mb-3">
+              <label for="languageSelect" class="form-label">Select Language</label>
+              <select id="languageSelect" class="form-select"></select>
+            </div>
+
+            <button id="translateBtn" class="btn btn-primary px-4" type="button">
+              Translate Image
+            </button>
+
+            <div id="statusMessage" class="mt-3"></div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm mb-4">
+          <div class="card-body text-center">
+            <h4 class="mb-3">Image Preview</h4>
+            <img
+              id="imagePreview"
+              class="img-fluid rounded shadow-sm d-none"
+              style="max-height: 320px;"
+              alt="Selected image preview"
+            />
+            <p id="previewPlaceholder" class="text-muted mb-0">No image selected</p>
+          </div>
+        </div>
+
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h4 class="mb-3">Results</h4>
+
+            <div class="mb-3">
+              <h6>Extracted Text</h6>
+              <div id="extractedText" class="border rounded p-3 bg-white">---</div>
+            </div>
+
+            <div class="mb-3">
+              <h6>Translated Text</h6>
+              <div id="translatedText" class="border rounded p-3 bg-white">---</div>
+            </div>
+
+            <p class="mb-0">
+              <strong>Language:</strong>
+              <span id="targetLanguageDisplay">N/A</span>
+            </p>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <footer class="bg-dark text-white text-center py-3 mt-auto">
+    <div class="container">
+      <small>© Copyright Group1 | COMP264_403 | Winter 2026 | Centennial College</small>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

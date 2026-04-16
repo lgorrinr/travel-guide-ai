@@ -128,6 +128,34 @@ def validate_target_language(body):
 
     return target_language.strip(), None
 
+def extract_text_lines(image_bytes):
+    """
+    Detect text lines from an image using Amazon Rekognition.
+    """
+    response = rekognition_client.detect_text(Image={"Bytes": image_bytes})
+
+    lines = []
+    for item in response.get("TextDetections", []):
+        if item.get("Type") == "LINE":
+            detected = item.get("DetectedText", "").strip()
+            if detected:
+                lines.append(detected)
+
+    return " ".join(lines).strip()
+
+
+def translate_content(text_value, target_language):
+    """
+    Translate text using Amazon Translate.
+    """
+    response = translate_client.translate_text(
+        Text=text_value,
+        SourceLanguageCode="auto",
+        TargetLanguageCode=target_language
+    )
+
+    return response.get("TranslatedText", "").strip()
+
 
 # =========================================================
 # ROUTE 1: HEALTH CHECK
@@ -149,6 +177,7 @@ def health_check():
             "owner": "Lissette",
             "available_routes": [
                 "GET /",
+                "GET /languages",
                 "POST /extract-text",
                 "POST /translate",
                 "POST /process-image"
@@ -156,9 +185,52 @@ def health_check():
         }
     )
 
-
 # =========================================================
-# ROUTE 2: EXTRACT TEXT
+# ROUTE 2: GET SUPPORTED LANGUAGES
+#
+# NOTE FOR MEMBER 3 (FRONTEND):
+# Use this route to dynamically populate the language dropdown.
+#
+# Response format:
+# {
+#   "languages": [
+#       {"code": "en", "name": "English"},
+#       {"code": "fr", "name": "French"}
+#   ]
+# }
+# =========================================================
+@app.route("/languages", methods=["GET"], cors=True)
+def get_languages():
+    try:
+        response = translate_client.list_languages(DisplayLanguageCode="en")
+
+        languages = []
+        for lang in response.get("Languages", []):
+            languages.append({
+                "code": lang.get("LanguageCode", ""),
+                "name": lang.get("LanguageName", "")
+            })
+
+        languages = sorted(languages, key=lambda x: x["name"])
+
+        return json_response(
+            status_code=200,
+            success=True,
+            message="Languages retrieved successfully.",
+            data={"languages": languages}
+        )
+
+    except Exception as e:
+        app.log.exception("Unexpected error in /languages")
+        return json_response(
+            status_code=500,
+            success=False,
+            message="Internal server error while processing /languages.",
+            data={"details": str(e)}
+        )
+    
+# =========================================================
+# ROUTE 3: EXTRACT TEXT
 #
 # NOTE FOR MEMBER 2 (AI Services):
 # Edit ONLY the TODO section inside this function.
@@ -221,7 +293,7 @@ def extract_text():
 
 
 # =========================================================
-# ROUTE 3: TRANSLATE TEXT
+# ROUTE 4: TRANSLATE TEXT
 #
 # NOTE FOR MEMBER 2 (AI Services):
 # Edit ONLY the TODO section inside this function.
@@ -294,7 +366,7 @@ def translate_text():
 
 
 # =========================================================
-# ROUTE 4: PROCESS IMAGE
+# ROUTE 5: PROCESS IMAGE
 #
 # NOTE FOR MEMBER 3 (FRONTEND):
 # This is the MAIN route to use from the web UI.
