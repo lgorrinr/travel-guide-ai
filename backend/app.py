@@ -3,6 +3,8 @@ import base64
 import json
 import logging
 import boto3
+import uuid
+from datetime import datetime, timezone
 
 # =========================================================
 # TRAVEL GUIDE BACKEND
@@ -38,6 +40,12 @@ translate_client = boto3.client("translate", region_name="us-east-1")
 # belong to you.
 # =========================================================
 S3_BUCKET = "travel-guide-images"
+
+s3_client = boto3.client('s3')
+
+dynamodb = boto3.resource("dynamodb")
+
+table = dynamodb.Table("TravelGuideTranslations")
 
 
 # =========================================================
@@ -455,6 +463,46 @@ def process_image():
         )
 
         translated_text = translation_response.get("TranslatedText", "")
+
+        # =========================================================
+        # FOR MEMBER 4 (Cloud / Data):
+        # =========================================================
+
+        # generating a random UUID as unique image name
+        unique = uuid.uuid4()
+        file_name = f"{unique.hex}.jpg"
+
+        # ============ START S3 ============
+        try:
+            s3_client.put_object(
+                Bucket = S3_BUCKET,
+                Body = image_bytes,
+                Key = file_name,
+                ContentType = "image/jpeg"
+            )
+        except Exception as e:
+            app.log.error(f"S3 error: {e}")
+            
+        # ============ END S3 ============
+
+        # ============ START DynamoDB ============
+        try:
+            table.put_item(Item = {
+                "request_id": str(unique),
+                # The method "utcnow" in class "datetime" is deprecated
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "original_text": extracted_text,
+                "translated_text": translated_text,
+                "target_language": target_language,
+                "S3_BUCKET_name": S3_BUCKET,
+                "image_name": file_name
+            })
+        except Exception as e:
+            app.log.error(f"DynamoDB error: {e}")
+        
+        # ============ END DynamoDB ============
+        # ======================== END MEMBER 4 ========================
+
 
         return json_response(
             status_code=200,
